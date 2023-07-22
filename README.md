@@ -8,8 +8,8 @@ You must I repeat MUST use the latest version of qb-truckingjob with this resour
 
 # License
 
-    QBCore Framework
-    Copyright (C) 2021 Joshua Eger
+    Damien Ostler
+    Copyright (C) 2021 Damien Ostler
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
