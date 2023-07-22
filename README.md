@@ -1,5 +1,6 @@
-# qb-shops
-Shops For QB-Core
+# qb-movingshops
+Moving Shops For QB-Core
+This allows you to set multiple coordinates for a shop and have them move on a set interval. Useful for blackmarkets things like that.
 
 # Notice
 
