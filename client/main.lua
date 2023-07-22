@@ -7,12 +7,21 @@ local listen = false
 local ShopPed = {}
 local NewZones = {}
 -- Functions
+
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(Config.MoveTime)
+        createPeds()
+    end
+end)
+
+
 local function createBlips()
     if pedSpawned then return end
-
     for store in pairs(Config.Locations) do
         if Config.Locations[store]["showblip"] then
-            local StoreBlip = AddBlipForCoord(Config.Locations[store]["coords"]["x"], Config.Locations[store]["coords"]["y"], Config.Locations[store]["coords"]["z"])
+            local random = math.random(#Config.Locations[store]["coords"]);
+            local StoreBlip = AddBlipForCoord(Config.Locations[store]["coords"][random]["x"], Config.Locations[store]["coords"][random]["y"], Config.Locations[store]["coords"][random]["z"])
             SetBlipSprite(StoreBlip, Config.Locations[store]["blipsprite"])
             SetBlipScale(StoreBlip, Config.Locations[store]["blipscale"])
             SetBlipDisplay(StoreBlip, 4)
@@ -22,7 +31,7 @@ local function createBlips()
             AddTextComponentSubstringPlayerName(Config.Locations[store]["label"])
             EndTextCommandSetBlipName(StoreBlip)
         end
-    end
+    ends
 end
 
 local function openShop(shop, data)
@@ -102,8 +111,8 @@ local function listenForControl()
     CreateThread(function()
         listen = true
         while listen do
+            TriggerServerEvent('qb-shops:server:SetShopList')
             if IsControlJustPressed(0, 38) then -- E
-                TriggerServerEvent('qb-shops:server:SetShopList')
                 if inChips then
                     exports["qb-core"]:KeyPressed()
                     TriggerServerEvent("qb-shops:server:sellChips")
@@ -125,12 +134,16 @@ local function createPeds()
     for k, v in pairs(Config.Locations) do
         local current = type(v["ped"]) == "number" and v["ped"] or joaat(v["ped"])
 
+        if(ShopPed[k]~=nil)then
+            DeletePed(ShopPed[k])
+        end
+
         RequestModel(current)
         while not HasModelLoaded(current) do
             Wait(0)
         end
-
-        ShopPed[k] = CreatePed(0, current, v["coords"].x, v["coords"].y, v["coords"].z-1, v["coords"].w, false, false)
+        local random = math.random(#v["coords"])
+        ShopPed[k] = CreatePed(0, current, v["coords"][random].x, v["coords"][random].y, v["coords"][random].z-1, v["coords"][random].w, false, false)
         TaskStartScenarioInPlace(ShopPed[k], v["scenario"], 0, true)
         FreezeEntityPosition(ShopPed[k], true)
         SetEntityInvincible(ShopPed[k], true)
@@ -161,27 +174,6 @@ local function createPeds()
     while not HasModelLoaded(current) do
         Wait(0)
     end
-
-    ShopPed["casino"] = CreatePed(0, current, Config.SellCasinoChips.coords.x, Config.SellCasinoChips.coords.y, Config.SellCasinoChips.coords.z-1, Config.SellCasinoChips.coords.w, false, false)
-    FreezeEntityPosition(ShopPed["casino"], true)
-    SetEntityInvincible(ShopPed["casino"], true)
-    SetBlockingOfNonTemporaryEvents(ShopPed["casino"], true)
-
-    if Config.UseTarget then
-        exports['qb-target']:AddTargetEntity(ShopPed["casino"], {
-            options = {
-                {
-                    label = 'Sell Chips',
-                    icon = 'fa-solid fa-coins',
-                    action = function()
-                        TriggerServerEvent("qb-shops:server:sellChips")
-                    end
-                }
-            },
-            distance = 2.0
-        })
-    end
-
     pedSpawned = true
 end
 
@@ -269,7 +261,6 @@ if not Config.UseTarget then
             if isPointInside then
                 inChips = true
                 exports["qb-core"]:DrawText(Lang:t("info.sell_chips"))
-                listenForControl()
             else
                 inChips = false
                 exports["qb-core"]:HideText()
